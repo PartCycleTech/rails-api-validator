@@ -1,15 +1,13 @@
 # ApiValidator
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/api_validator`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Rails gem for testing against [partcycle-api-fixtures](https://github.com/PartCycleTech/partcycle-api-fixtures)
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'api_validator'
+gem "api_validator", git: "git@github.com:PartCycleTech/rails-api-validator.git"
 ```
 
 And then execute:
@@ -22,17 +20,92 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### Step by step
 
-## Development
+1. Instantiate:
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```ruby
+api_validator = ApiValidator.new(spec: my_path_to_spec)
+```
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+2. Build request
 
-## Contributing
+```ruby
+api_validator.build_request(flex_param_hash)
+```
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/api_validator.
+3. Verify response
+
+```ruby
+api_validator.verify_response(actual_body, flex_params_array) do |expected_status, expected_body|
+  # Test that actual_response is equal to expected_body, and expected_status is equal to whatever is expected
+end
+```
+
+### Example
+
+Fixture:
+
+```json
+{
+  "request": {
+    "body": {
+      "data": {
+        "attributes": {
+          "to-zip": "35630",
+          "delivery-date": null
+        },
+        "relationships": {
+          "inventory-item": {
+            "data": {
+              "id": "@id",
+              "type": "inventory-items"
+            }
+          }
+        },
+        "type": "delivery-estimates"
+      }
+    }
+  },
+  "response": {
+    "status": "202",
+    "body": {
+      "data": {
+        "id": "@id",
+        "attributes": {
+          "delivery-date": "2017-06-23",
+          "to-zip": "35630"
+        },
+        "type": "delivery-estimates"
+      }
+    }
+  }
+}
+```
+
+Rails code:
+
+```ruby
+describe "POST /delivery-estimates", :vcr do
+  let(:est_delivery_date_from_cassette) { Date.new(2017, 6, 21) }
+  let(:two_business_days_after_carrier_delivery_date) { 2.business_days.after(est_delivery_date_from_cassette) }
+  let(:inventory_item) { FactoryGirl.create(:inventory_item, :shippable_as_freight) }
+  let(:api_validator) { ApiValidator.new(spec: 'delivery-estimates/post') }
+  let(:data) { api_validator.build_request({ "data.relationships.inventory-item.data.id" => inventory_item.id }) }
+
+  it "responds with delivery estimate" do
+    post_jsonapi "/api/delivery-estimates", data.to_json
+
+    api_validator.verify_response(json, ["data.id"]) do |expected_status, expected_body|
+      expect_jsonapi_response(expected_status)
+      expect(json).to eq expected_body
+    end
+
+    estimated_delivery_date = json.dig("data", "attributes", "delivery-date")
+    expect(estimated_delivery_date).to eq(two_business_days_after_carrier_delivery_date.to_s)
+  end
+end
+```
 
 ## License
 
