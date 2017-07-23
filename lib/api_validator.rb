@@ -5,7 +5,7 @@ class ApiValidator
   attr_reader :spec
 
   def initialize(options)
-    path = options[:spec]
+    path = options[:fixture_path]
     fixture = options[:fixture]
     @spec = path ? load_api_fixture(path) : fixture
   end

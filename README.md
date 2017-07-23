@@ -23,7 +23,7 @@ Or install it yourself as:
 1. Instantiate
 
 ```ruby
-api_validator = ApiValidator.new(spec: path_to_my_fixture)
+api_validator = ApiValidator.new(fixture_path: "path/to/my/fixture")
 ```
 
 2. Build request
