@@ -38,6 +38,8 @@ class ApiValidator
       end
     end
 
+    strip_links(response)
+
     if response["data"]
       spec_body["data"]["relationships"] = response["data"]["relationships"]
     end
@@ -63,5 +65,21 @@ class ApiValidator
   def assign_nested_value(hash, path, new_value)
     *remainder, tail = path
     remainder.inject(hash, :fetch)[tail] = new_value
+  end
+
+  def strip_links(response)
+    if response["data"]
+      response["data"].delete("links")
+    end
+
+    relationships = response.dig("data", "relationships") || {}
+    relationships.each do |key, relationship|
+      relationship.delete("links")
+    end
+
+    included = response["included"] || []
+    included.each do |included_record|
+      included_record.delete("links")
+    end
   end
 end
