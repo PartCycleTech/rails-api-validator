@@ -38,7 +38,7 @@ class ApiValidator
       end
     end
 
-    strip_links(response)
+    copy_links(response, spec_body)
 
     if response["data"]
       spec_body["data"]["relationships"] = response["data"]["relationships"]
@@ -67,19 +67,17 @@ class ApiValidator
     remainder.inject(hash, :fetch)[tail] = new_value
   end
 
-  def strip_links(response)
-    if response["data"]
-      response["data"].delete("links")
+  def copy_links(response, spec_body)
+    if response["data"] && spec_body["data"]
+      spec_body["data"]["links"] = response["data"]["links"]
     end
 
-    relationships = response.dig("data", "relationships") || {}
-    relationships.each do |key, relationship|
-      relationship.delete("links")
-    end
-
-    included = response["included"] || []
-    included.each do |included_record|
-      included_record.delete("links")
+    response_included = response["included"] || []
+    spec_body_included = spec_body["included"] || []
+    response_included.each_with_index do |item, index|
+      if spec_body_included[index]
+        spec_body_included[index]["links"] = item["links"]
+      end
     end
   end
 end

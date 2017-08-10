@@ -115,6 +115,13 @@ RSpec.describe ApiValidator do
               "links" => {
                 "self" => "http://www.example.com/api/credit-cards/9"
               }
+            },
+            {
+              "id" => "5",
+              "type" => "credit-cards",
+              "links" => {
+                "self" => "http://www.example.com/api/credit-cards/5"
+              }
             }
           ]
         }
@@ -134,6 +141,10 @@ RSpec.describe ApiValidator do
               "included" => [
                 {
                   "id" => "9",
+                  "type" => "credit-cards"
+                },
+                {
+                  "id" => "5",
                   "type" => "credit-cards"
                 }
               ]
