@@ -40,10 +40,7 @@ class ApiValidator
     end
 
     copy_links(response, spec_body)
-
-    if response["data"]
-      spec_body["data"]["relationships"] = response["data"]["relationships"]
-    end
+    copy_relationships(response["data"], spec_body["data"])
 
     yield spec_status, spec_body
   end
@@ -68,6 +65,12 @@ class ApiValidator
     remainder.inject(hash, :fetch)[tail] = new_value
   end
 
+  def copy_relationships(source, target)
+    if source && source["relationships"] && target
+      target["relationships"] = source["relationships"]
+    end
+  end
+
   def copy_links(response, spec_body)
     if response["data"] && spec_body["data"]
       spec_body["data"]["links"] = response["data"]["links"]
@@ -78,6 +81,7 @@ class ApiValidator
     response_included.each_with_index do |item, index|
       if spec_body_included[index]
         spec_body_included[index]["links"] = item["links"]
+        copy_relationships(item, spec_body_included[index])
       end
     end
   end
