@@ -89,5 +89,65 @@ RSpec.describe ApiValidator do
         end
       end
     end
+
+    context "with links in response but not fixture" do
+      let(:response) do
+        {
+          "data" => {
+            "id" => "123",
+            "type" => "orders",
+            "links" => {
+              "self" => "http://www.example.com/api/orders/123"
+            },
+            "relationships" => {
+              "credit-card" => {
+                "links" => {
+                  "self" => "http://www.example.com/api/orders/123/relationships/credit-card",
+                  "related" => "http://www.example.com/api/orders/123/credit-card"
+                }
+              }
+            }
+          },
+          "included" => [
+            {
+              "id" => "9",
+              "type" => "credit-cards",
+              "links" => {
+                "self" => "http://www.example.com/api/credit-cards/9"
+              }
+            }
+          ]
+        }
+      end
+
+      let(:fixture) do
+        {
+          "response" => {
+            "body" => {
+              "data" => {
+                "id" => "123",
+                "type" => "orders",
+                "relationships" => {
+                  "credit-card" => {}
+                }
+              },
+              "included" => [
+                {
+                  "id" => "9",
+                  "type" => "credit-cards"
+                }
+              ]
+            },
+            "status" => "200"
+          }
+        }
+      end
+
+      it "can still verify the response" do
+        api_validator.verify_response(response, []) do |status, body|
+          expect(body).to eq(response)
+        end
+      end
+    end
   end
 end
