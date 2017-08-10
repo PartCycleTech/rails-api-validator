@@ -39,8 +39,19 @@ class ApiValidator
       end
     end
 
-    copy_links(response, spec_body)
+    copy_links(response["data"], spec_body["data"])
     copy_relationships(response["data"], spec_body["data"])
+    copy_timestamps(response["data"], spec_body["data"])
+
+    response_included = response["included"] || []
+    spec_body_included = spec_body["included"] || []
+    response_included.each_with_index do |reponse_included_item, index|
+      if spec_body_included[index]
+        copy_links(reponse_included_item, spec_body_included[index])
+        copy_relationships(reponse_included_item, spec_body_included[index])
+        copy_timestamps(reponse_included_item, spec_body_included[index])
+      end
+    end
 
     yield spec_status, spec_body
   end
@@ -71,17 +82,20 @@ class ApiValidator
     end
   end
 
-  def copy_links(response, spec_body)
-    if response["data"] && spec_body["data"]
-      spec_body["data"]["links"] = response["data"]["links"]
+  def copy_links(source, target)
+    if source && source["links"] && target
+      target["links"] = source["links"]
     end
+  end
 
-    response_included = response["included"] || []
-    spec_body_included = spec_body["included"] || []
-    response_included.each_with_index do |item, index|
-      if spec_body_included[index]
-        spec_body_included[index]["links"] = item["links"]
-        copy_relationships(item, spec_body_included[index])
+  def copy_timestamps(source, target)
+    if source && target && target["attributes"]
+      if source.dig("attributes", "created-at")
+        target["attributes"]["created-at"] = source["attributes"]["created-at"]
+      end
+
+      if source.dig("attributes", "updated-at")
+        target["attributes"]["updated-at"] = source["attributes"]["updated-at"]
       end
     end
   end
