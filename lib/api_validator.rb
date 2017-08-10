@@ -25,9 +25,10 @@ class ApiValidator
     spec_body
   end
 
-  def verify_response(response, flex_params = [])
+  def verify_response(response_input, flex_params = [])
     spec_status = spec["response"]["status"].to_i
     spec_body = spec["response"]["body"].deep_dup
+    response = response_input.deep_dup
 
     flex_params.each do |key|
       path = key.split(".")
