@@ -39,6 +39,7 @@ class ApiValidator
       end
     end
 
+    copy_id(response["data"], spec_body["data"])
     copy_links(response["data"], spec_body["data"])
     copy_relationships(response["data"], spec_body["data"])
     copy_timestamps(response["data"], spec_body["data"])
@@ -47,6 +48,7 @@ class ApiValidator
     spec_body_included = spec_body["included"] || []
     response_included.each_with_index do |reponse_included_item, index|
       if spec_body_included[index]
+        copy_id(reponse_included_item, spec_body_included[index])
         copy_links(reponse_included_item, spec_body_included[index])
         copy_relationships(reponse_included_item, spec_body_included[index])
         copy_timestamps(reponse_included_item, spec_body_included[index])
@@ -91,12 +93,38 @@ class ApiValidator
   def copy_timestamps(source, target)
     if source && target && target["attributes"]
       if source.dig("attributes", "created-at")
-        target["attributes"]["created-at"] = source["attributes"]["created-at"]
+        if timestamp_is_valid?(source["attributes"]["created-at"])
+          target["attributes"]["created-at"] = source["attributes"]["created-at"]
+        end
       end
 
       if source.dig("attributes", "updated-at")
-        target["attributes"]["updated-at"] = source["attributes"]["updated-at"]
+        if timestamp_is_valid?(source["attributes"]["updated-at"])
+          target["attributes"]["updated-at"] = source["attributes"]["updated-at"]
+        end
       end
     end
+  end
+
+  def copy_id(source, target)
+    if source && target
+      if id_is_valid?(source["id"])
+        target["id"] = source["id"]
+      end
+    end
+  end
+
+  def timestamp_is_valid?(str)
+    is_valid = true
+    begin
+      DateTime.parse str
+    rescue ArgumentError
+      is_valid = false
+    end
+    is_valid
+  end
+
+  def id_is_valid?(str)
+    str.present?
   end
 end

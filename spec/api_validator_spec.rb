@@ -146,6 +146,43 @@ RSpec.describe ApiValidator do
       end
     end
 
+    context "with invalid timestamp in response" do
+      let(:fixture) do
+        {
+          "response" => {
+            "body" => {
+              "foo" => "bar",
+              "data" => {
+                "attributes" => {
+                  "created-at" => "2017-08-10T05:43:48.266Z",
+                  "updated-at" => "2017-08-10T05:43:48.266Z"
+                }
+              }
+            },
+            "status" => "200"
+          }
+        }
+      end
+
+      let(:response) do
+        {
+          "foo" => "bar",
+          "data" => {
+            "attributes" => {
+              "created-at" => "asdf",
+              "updated-at" => "asdf"
+            }
+          }
+        }
+      end
+
+      it "does not verify the response" do
+        api_validator.verify_response(response, ["outer.inner"]) do |status, body|
+          expect(body).not_to eq(response)
+        end
+      end
+    end
+
     context "with links in response but not fixture" do
       let(:response) do
         {
@@ -223,6 +260,68 @@ RSpec.describe ApiValidator do
 
       it "can still verify the response" do
         api_validator.verify_response(response, []) do |status, body|
+          expect(body).to eq(response)
+        end
+      end
+    end
+
+    context "with different ids in response and fixture" do
+      let(:fixture) do
+        {
+          "response" => {
+            "body" => {
+              "foo" => "bar",
+              "data" => {
+                "id" => "123",
+                "relationships" => {
+                  "credit-card" => {
+                    "id" => "123"
+                  }
+                }
+              },
+              "included" => [
+                {
+                  "id" => "123",
+                  "relationships" => {
+                    "credit-card" => {
+                      "id" => "123"
+                    }
+                  }
+                }
+              ]
+            },
+            "status" => "200"
+          }
+        }
+      end
+
+      let(:response) do
+        {
+          "foo" => "bar",
+          "data" => {
+            "id" => "567",
+            "relationships" => {
+              "credit-card" => {
+                "id" => "567"
+              }
+            }
+          },
+          "included" => [
+            {
+              "id" => "567",
+              "relationships" => {
+                "credit-card" => {
+                  "id" => "567"
+                }
+              }
+            }
+          ]
+        }
+      end
+
+      it "can still verify the response" do
+        api_validator.verify_response(response, ["outer.inner"]) do |status, body|
+          expect(status).to eq(200)
           expect(body).to eq(response)
         end
       end
