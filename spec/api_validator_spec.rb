@@ -29,12 +29,12 @@ RSpec.describe ApiValidator do
       end
     end
 
-    context "with @id flex param in fixture" do
-      let(:inner_value) { "@id" }
+    context "with id flex param in fixture" do
+      let(:inner_value) { "id\#inner-value" }
 
       it "returns the fixture with replaced value" do
         request = api_validator.build_request({
-          "outer.inner" => "123"
+          "inner-value" => "123"
         })
         expected_request = {
           "foo" => "bar",
@@ -66,15 +66,16 @@ RSpec.describe ApiValidator do
       let(:inner_value) { "dolphin" }
 
       it "returns the fixture with no changes" do
-        api_validator.verify_response(fixture) do |status, body|
+        response = fixture["response"]["body"]
+        api_validator.verify_response(response) do |status, body|
           expect(status).to eq(200)
-          expect(body).to eq(fixture["response"]["body"])
+          expect(body).to eq(response)
         end
       end
     end
 
-    context "with @id flex param in fixture" do
-      let(:inner_value) { "@id" }
+    context "with id flex param in fixture" do
+      let(:inner_value) { "id\#inner_value" }
 
       it "returns the fixture with replaced value" do
         response = {
@@ -83,7 +84,7 @@ RSpec.describe ApiValidator do
             "inner" => "123"
           }
         }
-        api_validator.verify_response(response, ["outer.inner"]) do |status, body|
+        api_validator.verify_response(response, { "inner_value" => "123" }) do |status, body|
           expect(status).to eq(200)
           expect(body).to eq(response)
         end
@@ -139,7 +140,7 @@ RSpec.describe ApiValidator do
       end
 
       it "can still verify the response" do
-        api_validator.verify_response(response, ["outer.inner"]) do |status, body|
+        api_validator.verify_response(response) do |status, body|
           expect(status).to eq(200)
           expect(body).to eq(response)
         end
@@ -177,7 +178,7 @@ RSpec.describe ApiValidator do
       end
 
       it "does not verify the response" do
-        api_validator.verify_response(response, ["outer.inner"]) do |status, body|
+        api_validator.verify_response(response) do |status, body|
           expect(body).not_to eq(response)
         end
       end
@@ -259,7 +260,7 @@ RSpec.describe ApiValidator do
       end
 
       it "can still verify the response" do
-        api_validator.verify_response(response, []) do |status, body|
+        api_validator.verify_response(response) do |status, body|
           expect(body).to eq(response)
         end
       end
@@ -320,7 +321,7 @@ RSpec.describe ApiValidator do
       end
 
       it "can still verify the response" do
-        api_validator.verify_response(response, ["outer.inner"]) do |status, body|
+        api_validator.verify_response(response) do |status, body|
           expect(status).to eq(200)
           expect(body).to eq(response)
         end

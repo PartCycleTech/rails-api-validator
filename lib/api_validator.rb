@@ -12,32 +12,15 @@ class ApiValidator
 
   def build_request(flex_params = [])
     spec_body = spec["request"]["body"].deep_dup
-
-    flex_params.each do |key, value|
-      path = key.split(".")
-      current_value = spec_body.dig(*path)
-      new_value = flex_params[key]
-      if is_flex_id(current_value) && is_valid_id(new_value)
-        assign_nested_value(spec_body, path, new_value)
-      end
-    end
-
+    spec_body = replace_flex_params(spec_body, flex_params)
     spec_body
   end
 
   def verify_response(response_input, flex_params = [])
     spec_status = spec["response"]["status"].to_i
     spec_body = spec["response"]["body"].deep_dup
+    spec_body = replace_flex_params(spec_body, flex_params)
     response = response_input.deep_dup
-
-    flex_params.each do |key|
-      path = key.split(".")
-      current_value = spec_body.dig(*path)
-      new_value = response.dig(*path)
-      if is_flex_id(current_value) && is_valid_id(new_value)
-        assign_nested_value(spec_body, path, new_value)
-      end
-    end
 
     copy_id(response["data"], spec_body["data"])
     copy_links(response["data"], spec_body["data"])
@@ -65,17 +48,22 @@ class ApiValidator
     JSON.parse(File.read(full_path))
   end
 
-  def is_flex_id(value)
-    value == "@id"
+  def replace_flex_params(json, flex_params)
+    stringified = JSON.generate(json)
+    flex_params.each do |param, value|
+      if (stringified.include?(param_as_id(param)) && is_valid_id(value))
+        stringified.sub!(param_as_id(param), "\"#{value}\"")
+      end
+    end
+    JSON.parse(stringified)
+  end
+
+  def param_as_id(param)
+    "\"id\##{param}\""
   end
 
   def is_valid_id(value)
     value.present?
-  end
-
-  def assign_nested_value(hash, path, new_value)
-    *remainder, tail = path
-    remainder.inject(hash, :fetch)[tail] = new_value
   end
 
   def copy_relationships(source, target)
