@@ -34,12 +34,12 @@ RSpec.describe ApiValidator do
 
       it "returns the fixture with replaced value" do
         request = api_validator.build_request({
-          "inner-value" => "123"
+          "inner-value" => 123
         })
         expected_request = {
           "foo" => "bar",
           "outer" => {
-            "inner" => "123"
+            "inner" => 123
           }
         }
         expect(request).to eq(expected_request)
@@ -81,7 +81,7 @@ RSpec.describe ApiValidator do
         response = {
           "foo" => "bar",
           "outer" => {
-            "inner" => "123"
+            "inner" => 123
           }
         }
         api_validator.verify_response(response, { "inner_value" => "123" }) do |status, body|
@@ -105,7 +105,7 @@ RSpec.describe ApiValidator do
               },
               "included" => [
                 {
-                  "id" => "9",
+                  "id" => 9,
                   "attributes" => {
                     "created-at" => "2017-08-10T05:16:27.707Z",
                     "updated-at" => "2017-08-10T05:16:27.707Z"
@@ -129,7 +129,7 @@ RSpec.describe ApiValidator do
           },
           "included" => [
             {
-              "id" => "9",
+              "id" => 9,
               "attributes" => {
                 "created-at" => "2017-08-10T05:43:48.266Z",
                 "updated-at" => "2017-08-10T05:43:48.266Z"
@@ -188,7 +188,7 @@ RSpec.describe ApiValidator do
       let(:response) do
         {
           "data" => {
-            "id" => "123",
+            "id" => 123,
             "type" => "orders",
             "links" => {
               "self" => "http://www.example.com/api/orders/123"
@@ -204,7 +204,7 @@ RSpec.describe ApiValidator do
           },
           "included" => [
             {
-              "id" => "9",
+              "id" => 9,
               "type" => "credit-cards",
               "links" => {
                 "self" => "http://www.example.com/api/credit-cards/9"
@@ -219,7 +219,7 @@ RSpec.describe ApiValidator do
               }
             },
             {
-              "id" => "5",
+              "id" => 5,
               "type" => "credit-cards",
               "links" => {
                 "self" => "http://www.example.com/api/credit-cards/5"
