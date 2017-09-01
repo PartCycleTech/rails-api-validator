@@ -53,6 +53,8 @@ class ApiValidator
     flex_params.each do |param, value|
       if (stringified.include?(param_as_id(param)) && is_valid_id(value))
         stringified.sub!(param_as_id(param), value.to_s)
+      elsif (stringified.include?(param_as_any(param)))
+        stringified.sub!(param_as_any(param), "\"#{value.to_s}\"")
       end
     end
     JSON.parse(stringified)
@@ -64,6 +66,10 @@ class ApiValidator
 
   def is_valid_id(value)
     value.present?
+  end
+
+  def param_as_any(param)
+    "\"any\##{param}\""
   end
 
   def copy_relationships(source, target)
