@@ -54,7 +54,7 @@ class ApiValidator
       if (stringified.include?(param_as_id(param)) && is_valid_id(value))
         stringified.sub!(param_as_id(param), value.to_s)
       elsif (stringified.include?(param_as_any(param)))
-        stringified.sub!(param_as_any(param), value.to_s)
+        stringified.sub!(param_as_any(param), "\"#{value.to_s}\"")
       end
     end
     JSON.parse(stringified)
