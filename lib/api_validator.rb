@@ -22,19 +22,22 @@ class ApiValidator
     spec_body = replace_flex_params(spec_body, flex_params)
     response = response_input.deep_dup
 
-    copy_id(response["data"], spec_body["data"])
-    copy_links(response["data"], spec_body["data"])
-    copy_relationships(response["data"], spec_body["data"])
-    copy_timestamps(response["data"], spec_body["data"])
+    # The `data` attribute can be either a single resource, or a list of resources
+    if response["data"].kind_of?(Array)
+      response["data"].each_with_index do |item, index|
+        if spec_body["data"][index]
+          copy_values(item, spec_body["data"][index])
+        end
+      end
+    else
+      copy_values(response["data"], spec_body["data"])
+    end
 
     response_included = response["included"] || []
     spec_body_included = spec_body["included"] || []
     response_included.each_with_index do |reponse_included_item, index|
       if spec_body_included[index]
-        copy_id(reponse_included_item, spec_body_included[index])
-        copy_links(reponse_included_item, spec_body_included[index])
-        copy_relationships(reponse_included_item, spec_body_included[index])
-        copy_timestamps(reponse_included_item, spec_body_included[index])
+        copy_values(reponse_included_item, spec_body_included[index])
       end
     end
 
@@ -70,6 +73,13 @@ class ApiValidator
 
   def param_as_any(param)
     "\"any\##{param}\""
+  end
+
+  def copy_values(source, target)
+    copy_id(source, target)
+    copy_links(source, target)
+    copy_relationships(source, target)
+    copy_timestamps(source, target)
   end
 
   def copy_relationships(source, target)
