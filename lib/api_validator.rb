@@ -21,6 +21,7 @@ class ApiValidator
     spec_body = spec["response"]["body"].deep_dup
     spec_body = replace_flex_params(spec_body, flex_params)
     response = response_input.deep_dup
+    copy_links(response, spec_body)
 
     # The `data` attribute can be either a single resource, or a list of resources
     if response["data"].kind_of?(Array)
