@@ -57,6 +57,8 @@ class ApiValidator
     flex_params.each do |param, value|
       if (stringified.include?(param_as_id(param)) && is_valid_id(value))
         stringified.sub!(param_as_id(param), value.to_s)
+      elsif (stringified.include?(param_as_number(param)) && is_valid_number(value))
+        stringified.sub!(param_as_number(param), "#{value.to_s}")
       elsif (stringified.include?(param_as_any(param)))
         stringified.sub!(param_as_any(param), "\"#{value.to_s}\"")
       end
@@ -68,8 +70,16 @@ class ApiValidator
     "\"id\##{param}\""
   end
 
+  def param_as_number(param)
+    "\"number\##{param}\""
+  end
+
   def is_valid_id(value)
     value.present?
+  end
+
+  def is_valid_number(value)
+    value.is_a? Numeric
   end
 
   def param_as_any(param)
