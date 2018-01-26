@@ -56,7 +56,7 @@ class ApiValidator
     stringified = JSON.generate(json)
     flex_params.each do |param, value|
       if (stringified.include?(param_as_id(param)) && is_valid_id(value))
-        stringified.gsub!(param_as_id(param), value.to_s)
+        stringified.gsub!(param_as_id(param), "\"#{value.to_s}\"")
       elsif (stringified.include?(param_as_number(param)) && is_valid_number(value))
         stringified.gsub!(param_as_number(param), "#{value.to_s}")
       elsif (stringified.include?(param_as_any(param)))
