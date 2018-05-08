@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["tyleryasaka@users.noreply.github.com"]
 
   spec.summary       = %q{Provides methods for validating a rails app against a set of API fixtures.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = "https://github.com/PartCycleTech/rails-api-validator"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
